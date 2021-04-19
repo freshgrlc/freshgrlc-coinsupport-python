@@ -18,6 +18,12 @@ def _assert_bech32_prefix(prefix):
     if type(prefix) != str or len(prefix) > 4 or ''.join(filter(lambda c: c in 'abcdefghijklmnopqrstuvwxyz', prefix)) != prefix:
         raise ValueError('Invalid bech32 prefix')
 
+def _bytes(x):
+    return bytes(bytearray([x]))
+
+def _int(x):
+    return x if type(x) == int else ord(x)
+
 
 def decode_base58_address(address, verify_version=None):
     raw = b58decode(address)
@@ -25,7 +31,7 @@ def decode_base58_address(address, verify_version=None):
     if len(raw) != 20 + 1:
         raise ValueError('Invalid length')
 
-    version = ord(raw[0])
+    version = _int(raw[0])
     pubkeyhash = raw[1:]
 
     _assert_version(version, verify_version, 'address')
@@ -45,7 +51,7 @@ def decode_bech32_address(address, verify_prefix=None):
     if len(decoded) != 20:
         raise ValueError('Not a bech32 p2wpkh address')
 
-    return version, ''.join(chr(b) for b in decoded)
+    return version, bytes(bytearray(decoded))
 
 
 def decode_any_address(address, bech32_prefix=None):
@@ -65,10 +71,10 @@ def decode_privkey(encoded_privkey, verify_version=None):
 
     compressed_pubkey = len(raw) == 1+32+1
 
-    if compressed_pubkey and ord(raw[-1:]) != 0x01:
+    if compressed_pubkey and _int(raw[-1:]) != 0x01:
         raise ValueError('Invalid private key length / invalid public key compression byte')
 
-    version = ord(raw[0])
+    version = _int(raw[0])
     privkey = raw[1:1+32]
 
     _assert_version(version, verify_version, 'private key')
@@ -77,14 +83,14 @@ def decode_privkey(encoded_privkey, verify_version=None):
 
 def encode_base58_address(version, pubkeyhash):
     _assert_inputdata(version, pubkeyhash, 20, 'public key hash')
-    return b58encode(chr(version) + pubkeyhash)
+    return b58encode(_bytes(version) + pubkeyhash)
 
 
 def encode_bech32_address(prefix, pubkeyhash):
     _assert_inputdata(0, pubkeyhash, 20, 'public key hash')
     _assert_bech32_prefix(prefix)
 
-    encoded = b32encode(prefix, 0, [ ord(c) for c in pubkeyhash ])
+    encoded = b32encode(prefix, 0, [ _int(c) for c in pubkeyhash ])
     if encoded is not None:
         return encoded
     raise ValueError('Unable to encode public key hash to bech32 encoded address with prefix "%s"' % prefix)
@@ -92,5 +98,5 @@ def encode_bech32_address(prefix, pubkeyhash):
 
 def encode_privkey(version, privkey, compressed_pubkey=True):
     _assert_inputdata(version, privkey, 32, 'private key')
-    return b58encode(chr(version) + privkey + (chr(0x01) if compressed_pubkey else b''))
+    return b58encode(_bytes(version) + privkey + (_bytes(0x01) if compressed_pubkey else b''))
 
