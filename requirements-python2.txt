@@ -1,0 +1,2 @@
+base58==1.0.3
+python-bitcoinrpc==1.0
