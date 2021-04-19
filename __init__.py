@@ -1,1 +1,1 @@
-from daemon import Daemon, TransactionSignError
+from coinsupport.daemon import Daemon, TransactionSignError
