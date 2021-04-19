@@ -1,4 +1,4 @@
-from static.coininfo import *
+from coinsupport.static.coininfo import *
 
 
 _COINS = None
