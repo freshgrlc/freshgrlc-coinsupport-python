@@ -1,4 +1,4 @@
-from addresscodecs import decode_base58_address, encode_base58_address, decode_bech32_address, encode_bech32_address
+from coinsupport.addresscodecs import decode_base58_address, encode_base58_address, decode_bech32_address, encode_bech32_address
 
 
 class SegwitConverter(object):
